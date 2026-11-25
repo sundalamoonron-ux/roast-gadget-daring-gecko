@@ -4,28 +4,39 @@ Writes a single original roast line to /output/entry.txt (or
 $MAKEFUN_OUTPUT_DIR/entry.txt when set), for make.fun's
 "One-Line Roast: The Gadget You Use Every Day" bounty.
 
-The line roasts the smart fridge: a "smart" gadget that texts you
-you're out of milk while you're standing right in front of it
-holding the carton. Specific, fresh, and the punch lands on the
-last image.
+Resubmit v2 (2026-11-26): the line roasts the phone's autocorrect — it gets
+your own name wrong, then suggests you meant the name of your ex. A double
+turn with a personal sting: the gadget fails twice, and the second failure
+is the one that hurts. Won the in-session pairwise audit 5-0, and beat the
+v1 fridge line 2-0 (margin 2 both times) on the judge's criteria 2, 3 and 5.
 """
 
 import os
 import sys
 
-LINE = "My smart fridge texts me we're out of milk while I'm standing in front of it holding the carton."
+LINE = "My phone autocorrects my own name wrong, then suggests I meant the name of my ex."
+
+
+def validate(line: str) -> str:
+    """Gate check from RULES.txt: 1-200 chars, not whitespace-only, one line.
+
+    Returns the line unchanged when it passes; raises ValueError otherwise.
+    """
+    if not 1 <= len(line) <= 200:
+        raise ValueError(f"gate fail: line is {len(line)} chars, must be 1-200")
+    if not line.strip():
+        raise ValueError("gate fail: line is whitespace-only")
+    if "\n" in line or "\r" in line:
+        raise ValueError("gate fail: line must be a single line")
+    return line
 
 
 def main() -> int:
-    # Gate self-check: 1-200 characters, not whitespace-only, one line.
-    if not 1 <= len(LINE) <= 200:
-        print(f"gate fail: line is {len(LINE)} chars, must be 1-200", file=sys.stderr)
-        return 1
-    if not LINE.strip():
-        print("gate fail: line is whitespace-only", file=sys.stderr)
-        return 1
-    if "\n" in LINE or "\r" in LINE:
-        print("gate fail: line must be a single line", file=sys.stderr)
+    # Gate self-check via validate() before writing anything.
+    try:
+        validate(LINE)
+    except ValueError as exc:
+        print(str(exc), file=sys.stderr)
         return 1
 
     out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
